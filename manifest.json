@@ -1,24 +1,33 @@
 {
-	"name": "SAMPLE_NAME",
-	"version": "0.1",
+	"name": "__MSG_extName__",
+	"version": "1.2",
 	"manifest_version" : 2,
-	"description": "SAMPLE_DESCRIPTION",
+	"description": "__MSG_extDescription__",
+	"permissions": [
+    	"tabs",
+    	"contextMenus",
+    	"http://*/*",
+    	"https://*/*",
+    	"notifications"
+  	],
+  	"web_accessible_resources": [
+	    "tpl/postForm.html",
+	    "img/ajax-loader.gif",
+	    "img/icon_share.png",
+	    "img/colors.png"
+	],
+	"content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
 	"background" : {
-		"page" : "background.html"
-	},
-	"page_action" :
-	{
-		"default_icon": {
-			"19": "icons/19.png",
-			"38": "icons/38.png"
-		},
-		"default_title" : "SAMPLE_TITLE",
-		"default_popup" : "fragments/popup.html"
+		"scripts" : [
+			"scripts/reqManager.js",
+			"scripts/background.js"
+		]
 	},
 	"content_scripts": [
 	{
 		"matches": ["http://*/*"],
-		"js": ["lib/jquery-1.8.3.min.js","scripts/main.js"],
+		"js": ["lib/zepto.js","lib/jquery.magnific-popup.min.js","lib/mustache.js","scripts/main.js", "lib/openapi.js"],
+		"css": ["css/magnific-popup.css"],
 		"run_at": "document_idle"
 	}
 	],
@@ -27,5 +36,5 @@
 		"48": "icons/48.png",
 		"128": "icons/128.png"
 	},
-	"options_page" : "fancy-settings/source/index.html"
+	"default_locale": "ru"
 }
