@@ -1,0 +1,10 @@
+{
+	"extName": {
+		"message": "VKFotki - Upload images to VKontakte",
+		"description": "Extension Name" 
+	},
+	"extDescription": {
+		"message": "Allow upload photos to VKontakte from any website",
+		"description": "Extension Description"
+	}
+}
