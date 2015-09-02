@@ -1,37 +1,13 @@
+var iconUrl = chrome.extension.getURL('img/colors.png');
+
 function notify(title, text) {
-	//var icon = chrome.extension.getURL('img/colors.png');
-	//var notification = webkitNotifications.createNotification(icon, title, text);
-	//notification.show();
-	console.log(title);
+	chrome.notifications.create('VKFotkiNotification', {
+		type: 'basic',
+		iconUrl: iconUrl,
+		title: title,
+		message: text
+	});
 }
-
-// First, try to use chrome rich notification but id doesn't work
-//var opt = {
-//    type: "basic",
-//    title: "Primary Title",
-//    message: "Primary message to display",
-////    iconUrl: chrome.extension.getURL('img/icon_share.png')
-//};
-//
-//chrome.notifications.getPermissionLevel(function (level) {
-//    console.log('Permission lvl is : ' + level);
-//})
-//
-//chrome.notifications.create("123d38g", opt, function(notId) {
-//    console.log(
-//            'notification created ' + notId
-//    );
-//});
-
-// Second, try to use HTML5 notification
-//window.addEventListener('load', function () {
-//    Notification.requestPermission(function (status) {
-//        // This allows to use Notification.permission with Chrome/Safari
-//        if (Notification.permission !== status) {
-//            Notification.permission = status;
-//        }
-//    });
-//});
 
 var VKFotki = {
 
