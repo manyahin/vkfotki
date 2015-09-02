@@ -1,57 +1,80 @@
 function notify(title, text) {
-	var icon = chrome.extension.getURL('img/colors.png');
-	var notification = webkitNotifications.createNotification(icon, title, text);
-	notification.show();
+	//var icon = chrome.extension.getURL('img/colors.png');
+	//var notification = webkitNotifications.createNotification(icon, title, text);
+	//notification.show();
+	console.log(title);
 }
+
+// First, try to use chrome rich notification but id doesn't work
+//var opt = {
+//    type: "basic",
+//    title: "Primary Title",
+//    message: "Primary message to display",
+////    iconUrl: chrome.extension.getURL('img/icon_share.png')
+//};
+//
+//chrome.notifications.getPermissionLevel(function (level) {
+//    console.log('Permission lvl is : ' + level);
+//})
+//
+//chrome.notifications.create("123d38g", opt, function(notId) {
+//    console.log(
+//            'notification created ' + notId
+//    );
+//});
+
+// Second, try to use HTML5 notification
+//window.addEventListener('load', function () {
+//    Notification.requestPermission(function (status) {
+//        // This allows to use Notification.permission with Chrome/Safari
+//        if (Notification.permission !== status) {
+//            Notification.permission = status;
+//        }
+//    });
+//});
 
 var VKFotki = {
 
 	init: function() {
-		console.log('start backend extension');
+		console.log('VKFotki: start backend extension');
 
 		var that = this;
 
-		this.createContextMenu(function() {
-
-		});
-
+		// Create context menu
+		this.createContextMenu();
 	},
 
-	connectToTab: function(info, tab) {
+	onContextMenuClick: function(info, tab) {
 
-		// Get info about clicked picture and page
+		// Get an info about clicked picture and page
 		var image = {
 			itemId: info.menuItemId,
 			url: info.pageUrl,
 			srcUrl: info.srcUrl,
 			title: tab.title
-		}
+		};
 
 		// Get access token
 		VKFotki.getAuth(function(userId, token){
 
-			// Get albums of user
+			// Get user albums from VK profile
 			ReqManager.apiMethod("photos.getAlbums", {
 				access_token: token
 			}, function(data) {
 
-				var albums = [];
-
-				for(album in data.response) {
-					albums[album] = data.response[album];
-				}		
+				var albums = data.response;
 
 				// Create long-live message passing from Background to Content script
 				var port = chrome.tabs.connect(tab.id, {name: "vkLongConnect"});
 
-				// Say to content script: Show popup!
+				// Say to content script: Show popup
 				port.postMessage({
-					action: "show",
+					action: "showPopup",
 					image: image,
 					albums: albums
 				});
 
-				// And wait of response from content script
+				// And wait for response from content script
 				port.onMessage.addListener(function(msg) {
 
 					// Loading image
@@ -94,7 +117,7 @@ var VKFotki = {
 								var file = new Blob([new Uint8Array(array)], {type: 'image/png'});
 								console.log("Size of file: " + file.size);
 								// End loading image
-								
+
 								// Upload photo to Album
 								var formDataAlbum = new FormData();
 								formDataAlbum.append('file1', file, 'Image.png');
@@ -184,7 +207,7 @@ var VKFotki = {
 									})
 									notify('Ошибка',"Не удалось получить сервер для загрузки изображения");
 						    	});
-								
+
 							};
 
 						} else {
@@ -219,25 +242,25 @@ var VKFotki = {
 
 	},
 
-	createContextMenu: function(callback) {
-		console.log('create context menu');
+	createContextMenu: function() {
+		console.log('VKFotki: create context menu');
 
 		chrome.contextMenus.removeAll();
-
 		chrome.contextMenus.create({
 			title: "Загрузить во ВКонтакте",
 			contexts: ["image"],
-			onclick: this.connectToTab
+			onclick: this.onContextMenuClick
 		});
-
-		callback();
 	},
 
 	getAuth: function(callback) {
-		console.log('start auth');
+		console.log('VKFotki: get auth token');
 
 		var loginTabId, loginWinId;
-		var url =  "https://oauth.vk.com/authorize?client_id=3551471&scope=photos,wall&redirect_uri=http://oauth.vk.com/blank.html&display=popup&response_type=token";
+		var url = "https://oauth.vk.com/authorize?" +
+			"client_id=3551471&scope=photos,wall" +
+			"&redirect_uri=http://oauth.vk.com/blank.html" +
+			"&display=popup&response_type=token";
 
 		chrome.windows.create({
 			url: url,
@@ -262,7 +285,7 @@ var VKFotki = {
 					var userId = tokenMatches[3];
 
 					var timeNow = new Date().getTime();
-					var timeEnd = timeNow + parseInt(expires, 10);	
+					var timeEnd = timeNow + parseInt(expires, 10);
 
 					localStorage['user_id'] = userId;
 					localStorage['access_token'] = token;

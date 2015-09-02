@@ -1,4 +1,8 @@
-VK Fotki
-Extension for Chrome, allow upload any image from browser to VK.com.
+# VK Fotki
 
-Click on image by right button of mouse and in additional menu select - Upload to VK.com 
+Extension for Chrome, that allow to upload any image from internet to your album in VKontakte.
+
+## Instructions
+
+Click by right button of mouse on any image and in context menu select - Upload to VK.com.
+

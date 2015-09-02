@@ -1,6 +1,6 @@
 $(document).ready(function() {
-	console.log('Content script start');
-})
+	console.log('VKFotki: Content script loaded.');
+});
 
 var popup = null;
 
@@ -9,8 +9,7 @@ chrome.runtime.onConnect.addListener(function(port) {
 	port.onMessage.addListener(function(msg) {
 		console.log(msg);
 		switch(msg.action) {
-			case "show": // Show popup with info
-				console.log('Receive message, show popup!');
+			case "showPopup": // Show popup with info
 
 				// Create magnific popup
 				if(popup !== null) {
