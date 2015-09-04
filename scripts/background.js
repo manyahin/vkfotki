@@ -1,11 +1,11 @@
 var iconUrl = chrome.extension.getURL('img/colors.png');
 
-function notify(title, text) {
+function notify(title, message) {
 	chrome.notifications.create('VKFotkiNotification', {
 		type: 'basic',
 		iconUrl: iconUrl,
 		title: title,
-		message: text
+		message: message
 	});
 }
 
@@ -14,14 +14,22 @@ var VKFotki = {
 	init: function() {
 		console.log('VKFotki: start backend extension');
 
-		var that = this;
-
 		// Create context menu
 		this.createContextMenu();
 	},
 
-	onContextMenuClick: function(info, tab) {
+	createContextMenu: function() {
+		console.log('VKFotki: create context menu');
 
+		chrome.contextMenus.removeAll();
+		chrome.contextMenus.create({
+			title: "Загрузить во ВКонтакте",
+			contexts: ["image"],
+			onclick: this.onContextMenuClick
+		});
+	},
+
+	onContextMenuClick: function(info, tab) {
 		// Get an info about clicked picture and page
 		var image = {
 			itemId: info.menuItemId,
@@ -31,7 +39,7 @@ var VKFotki = {
 		};
 
 		// Get access token
-		VKFotki.getAuth(function(userId, token){
+		VKFotki.getVKToken(function(token, userId, expires){
 
 			// Get user albums from VK profile
 			ReqManager.apiMethod("photos.getAlbums", {
@@ -218,26 +226,36 @@ var VKFotki = {
 
 	},
 
-	createContextMenu: function() {
-		console.log('VKFotki: create context menu');
-
-		chrome.contextMenus.removeAll();
-		chrome.contextMenus.create({
-			title: "Загрузить во ВКонтакте",
-			contexts: ["image"],
-			onclick: this.onContextMenuClick
-		});
-	},
-
-	getAuth: function(callback) {
+	getVKToken: function(callback) {
 		console.log('VKFotki: get auth token');
 
-		var loginTabId, loginWinId;
+		console.dir(localStorage);
+
+		// Check if data exists in localStorage
+		if (localStorage['access_token'] && localStorage['user_id']) {
+			// Check if token still active, get 10 seconds allowance
+			if (localStorage['token_expires'] - 10000 > new Date().getTime()) {
+				// Return data from localStorage
+				return callback(
+					localStorage['access_token'], 
+					localStorage['user_id'], 
+					localStorage['token_expires']
+				);
+			}
+			else {
+				// Clear localStorage
+				localStorage.clear();
+			}
+		}
+
+		var that = this;
+		var loginTabId, loginWinId, intervalId;
 		var url = "https://oauth.vk.com/authorize?" +
 			"client_id=3551471&scope=photos,wall" +
 			"&redirect_uri=http://oauth.vk.com/blank.html" +
 			"&display=popup&response_type=token";
 
+		// Create popup to grab token
 		chrome.windows.create({
 			url: url,
 			left: 0,
@@ -252,7 +270,12 @@ var VKFotki = {
 		});
 
 		chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-			if(loginTabId != tabId) return;
+			if(loginTabId != tabId) {
+				// Proccess only with VK login popup
+				return;
+			}
+
+			// Searching for a token in url
 			if(tab.url.indexOf('access_token')) {
 				var tokenMatches = tab.url.match(/#access_token=(\w+).*expires_in=(\d+).*user_id=(\d+)/);
 				if (tokenMatches) {
@@ -260,19 +283,17 @@ var VKFotki = {
 					var expires = tokenMatches[2];
 					var userId = tokenMatches[3];
 
-					var timeNow = new Date().getTime();
-					var timeEnd = timeNow + parseInt(expires, 10);
+					var tokenExprires = new Date().getTime() + parseInt(expires, 10);
 
 					localStorage['user_id'] = userId;
 					localStorage['access_token'] = token;
-					localStorage['token_expires'] = timeEnd;
+					localStorage['token_expires'] = tokenExprires;
 
+					chrome.tabs.remove(loginTabId);
 					chrome.windows.remove(loginWinId);
+					loginWinId = loginTabId = null;
 
-					loginWinId = null;
-					loginTabId = null;
-
-					callback(userId, token, expires);
+					callback(token, userId, expires);
 				}
 			}
 		});
