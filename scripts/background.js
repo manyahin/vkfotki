@@ -229,8 +229,6 @@ var VKFotki = {
 	getVKToken: function(callback) {
 		console.log('VKFotki: get auth token');
 
-		console.dir(localStorage);
-
 		// Check if data exists in localStorage
 		if (localStorage['access_token'] && localStorage['user_id']) {
 			// Check if token still active, get 10 seconds allowance
