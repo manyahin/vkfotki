@@ -25,7 +25,7 @@
 	},
 	"content_scripts": [
 	  {
-		  "matches": ["http://*/*"],
+		  "matches": ["*://*/*"],
 		  "js": ["lib/zepto.js", "lib/jquery.magnific-popup.min.js", "lib/mustache.js", "scripts/main.js"],
 		  "css": ["css/magnific-popup.css"],
 		  "run_at": "document_idle"
