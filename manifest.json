@@ -20,7 +20,8 @@
 	"background" : {
 		"scripts" : [
 			"scripts/reqManager.js",
-			"scripts/background.js"
+			"scripts/background.js",
+			"lib/bluebird.min.js"
 		]
 	},
 	"content_scripts": [
