@@ -19,16 +19,15 @@ function notify(title, message) {
 }
 
 var VKFotki = {
-
 	init: function() {
-		console.log('VKFotki: start backend extension');
+		console.log('start backend script');
 
 		// Create context menu
 		this.createContextMenu();
 	},
 
 	createContextMenu: function() {
-		console.log('VKFotki: create context menu');
+		console.log('create context menu');
 
 		chrome.contextMenus.removeAll();
 		chrome.contextMenus.create({
@@ -39,6 +38,8 @@ var VKFotki = {
 	},
 
 	onContextMenuClick: function(info, tab) {
+		console.warn('----- received event from content script -----')
+
 		// Get an info about clicked picture and page
 		var image = {
 			itemId: info.menuItemId,
@@ -54,7 +55,7 @@ var VKFotki = {
 				return VKFotki.startMessagePassing(image, albums, tab)
 			})
 			.finally(function(albums) {
-				console.log('Conext menu click handled');
+				console.log('context menu handled');
 			})
 			.catch(function(err) {
 				console.error(err);
@@ -63,11 +64,11 @@ var VKFotki = {
 	},
 
 	onReceiveMessage: function(msg) {
-		console.log('VKFotki: received message from content script');
+		console.log('received message from content script');
 
 		// TODO: add validate to verify image
 
-		// Loading and convert image, all magic here
+		// Loading and convert image, all magic is happening here
 		var xhr = new XMLHttpRequest();
 			xhr.open('GET', msg.image.srcUrl, true);
 			xhr.responseType = 'blob';
@@ -77,7 +78,6 @@ var VKFotki = {
 
 				var blob = new Blob([this.response], {type: 'image/png'});
 
-				// console.log(window.URL.createObjectURL(blob));
 				var uploadedImage = document.getElementById('uploadedImage');
 				if(uploadedImage)
 					uploadedImage.parentNode.removeChild(uploadedImage);
@@ -106,7 +106,7 @@ var VKFotki = {
 					}
 
 					var file = new Blob([new Uint8Array(array)], {type: 'image/png'});
-					console.log("Image converted, size of the image: " + file.size + ' bytes');
+					console.log("image converted, size of the image: " + file.size + ' bytes');
 					// End loading image
 
 					// Upload photo to Album
@@ -126,9 +126,7 @@ var VKFotki = {
 							}
 						})
 						.finally(function() {
-							console.log('VKFotki: Image succesffuly uploaded to VKontakte');
-
-							console.log(msg.post);
+							console.log('image succesffuly uploaded to VKontakte');
 
 							if (msg.post.wall) {
 								notify('Изображение загружено', 'Изображение успешно добавлено в альбом и опубликовано на стене');
@@ -141,9 +139,7 @@ var VKFotki = {
 							console.error(err);
 							notify('Ошибка', err.message);
 				    });
-
 				};
-
 			} else {
 				console.error('ERROR: XHR onload method return ' + this.status);
 				notify('Ошибка', 'Не удалось загрузить изображение');
@@ -154,7 +150,7 @@ var VKFotki = {
 	},
 
 	getUploadServerAndUploadPhoto: function(msg, formDataAlbum) {
-		console.log('VKFotki: getting an upload server');
+		console.log('getting an upload server');
 
 		return new Promise(function(resolve, reject) {
 			ReqManager.apiMethod("photos.getUploadServer", {
@@ -196,7 +192,7 @@ var VKFotki = {
 	},
 
 	saveImage: function(msg, serverData) {
-		console.log('VKFotki: saving an image')
+		console.log('saving an image to album')
 
 		return new Promise(function(resolve, reject) {
 			ReqManager.apiMethod("photos.save", {
@@ -221,7 +217,7 @@ var VKFotki = {
 	},
 
 	postToWall: function(msg, uploaded_photo) {
-		console.log('VKFotki: posting to wall')
+		console.log('posting an image to wall')
 
 		return new Promise(function(resolve, reject) {
 			ReqManager.apiMethod("wall.post", {
@@ -243,7 +239,7 @@ var VKFotki = {
 	},
 
 	startMessagePassing: function(image, albums, tab) {
-		console.log('VKFotki: start message passing')
+		console.log('start message passing')
 
 		return new Promise(function(resolve, reject) {
 			// Create long-live message passing from Background to Content script
@@ -264,7 +260,7 @@ var VKFotki = {
 	},
 
 	getVKAlbumbs: function(token, userId, tokenExprires) {
-		console.log('VKFotki: get user albums')
+		console.log('get user albums')
 
 		return new Promise(function(resolve, reject) {
 			// Get user albums from VK profile
@@ -284,7 +280,7 @@ var VKFotki = {
 	},
 
 	getVKToken: function() {
-		console.log('VKFotki: get auth token');
+		console.log('get auth token');
 
 		return new Promise(function(resolve, reject) {
 			// Check if data exists in localStorage

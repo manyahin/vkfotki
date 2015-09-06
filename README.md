@@ -10,4 +10,4 @@ Click by right button of mouse on any image and in context menu select - Upload 
 
 v1.2.2
 * If access token still availability it can be used from localStorage instead to get a new token every time. 
-* Work on https pages.
+* Work on https pages, including VKontakte itself.
